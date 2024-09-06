@@ -46,29 +46,6 @@ func resourceKeycloakIdentityProviderMapper() *schema.Resource {
 	}
 }
 
-func getIdentityProviderMapperFromData(data *schema.ResourceData) (*keycloak.IdentityProviderMapper, error) {
-	rec := &keycloak.IdentityProviderMapper{
-		Id:                    data.Id(),
-		Realm:                 data.Get("realm").(string),
-		Name:                  data.Get("name").(string),
-		IdentityProviderAlias: data.Get("identity_provider_alias").(string),
-		Config: &keycloak.IdentityProviderMapperConfig{
-			ExtraConfig: getExtraConfigFromData(data),
-		},
-	}
-	return rec, nil
-}
-
-func setIdentityProviderMapperData(data *schema.ResourceData, identityProviderMapper *keycloak.IdentityProviderMapper) error {
-	data.SetId(identityProviderMapper.Id)
-	data.Set("realm", identityProviderMapper.Realm)
-	data.Set("name", identityProviderMapper.Name)
-	data.Set("identity_provider_alias", identityProviderMapper.IdentityProviderAlias)
-	setExtraConfigData(data, identityProviderMapper.Config.ExtraConfig)
-
-	return nil
-}
-
 func resourceKeycloakIdentityProviderMapperDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	keycloakClient := meta.(*keycloak.KeycloakClient)
 

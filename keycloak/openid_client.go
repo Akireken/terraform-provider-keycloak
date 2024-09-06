@@ -80,6 +80,7 @@ type OpenidClientAttributes struct {
 	Oauth2DeviceCodeLifespan              string                           `json:"oauth2.device.code.lifespan,omitempty"`
 	Oauth2DevicePollingInterval           string                           `json:"oauth2.device.polling.interval,omitempty"`
 	PostLogoutRedirectUris                types.KeycloakSliceHashDelimited `json:"post.logout.redirect.uris,omitempty"`
+	ExcludeIssuerFromAuthResponse         types.KeycloakBoolQuoted
 }
 
 type OpenidAuthenticationFlowBindingOverrides struct {

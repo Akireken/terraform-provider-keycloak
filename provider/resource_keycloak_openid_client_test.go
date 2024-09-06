@@ -31,7 +31,7 @@ func TestAccKeycloakOpenidClient_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     testAccRealm.Realm + "/",
-				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response"},
+				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response", "exclude_issuer_from_auth_response"},
 			},
 		},
 	})
@@ -55,7 +55,7 @@ func TestAccKeycloakOpenidClient_basic_with_consent(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     testAccRealm.Realm + "/",
-				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response"},
+				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response", "exclude_issuer_from_auth_response"},
 			},
 		},
 	})
@@ -331,7 +331,7 @@ func TestAccKeycloakOpenidClient_AccessToken_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     testAccRealm.Realm + "/",
-				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response"},
+				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response", "exclude_issuer_from_auth_response"},
 			},
 		},
 	})
@@ -363,7 +363,7 @@ func TestAccKeycloakOpenidClient_ClientTimeouts_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     testAccRealm.Realm + "/",
-				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response"},
+				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response", "exclude_issuer_from_auth_response"},
 			},
 		},
 	})
@@ -399,7 +399,7 @@ func TestAccKeycloakOpenidClient_Device_basic(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateIdPrefix:     testAccRealm.Realm + "/",
-				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response"},
+				ImportStateVerifyIgnore: []string{"exclude_session_state_from_auth_response", "exclude_issuer_from_auth_response"},
 			},
 		},
 	})
@@ -519,6 +519,7 @@ func TestAccKeycloakOpenidClient_pkceCodeChallengeMethod(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", ""),
 					testAccCheckKeycloakOpenidClientHasExcludeSessionStateFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
 				),
 			},
 			{
@@ -526,6 +527,7 @@ func TestAccKeycloakOpenidClient_pkceCodeChallengeMethod(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", "plain"),
 					testAccCheckKeycloakOpenidClientHasExcludeSessionStateFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
 				),
 			},
 			{
@@ -533,6 +535,7 @@ func TestAccKeycloakOpenidClient_pkceCodeChallengeMethod(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", "S256"),
 					testAccCheckKeycloakOpenidClientHasExcludeSessionStateFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
 				),
 			},
 			{
@@ -540,6 +543,7 @@ func TestAccKeycloakOpenidClient_pkceCodeChallengeMethod(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", ""),
 					testAccCheckKeycloakOpenidClientHasExcludeSessionStateFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
 				),
 			},
 		},
@@ -587,7 +591,7 @@ func TestAccKeycloakOpenidClient_excludeSessionStateFromAuthResponse(t *testing.
 	})
 }
 
-func TestAccKeycloakOpenidClient_authenticationFlowBindingOverrides(t *testing.T) {
+func TestAccKeycloakOpenidClient_excludeIssuerFromAuthResponse(t *testing.T) {
 	t.Parallel()
 	clientId := acctest.RandomWithPrefix("tf-acc")
 
@@ -597,12 +601,32 @@ func TestAccKeycloakOpenidClient_authenticationFlowBindingOverrides(t *testing.T
 		CheckDestroy:      testAccCheckKeycloakOpenidClientDestroy(),
 		Steps: []resource.TestStep{
 			{
-				Config: testKeycloakOpenidClient_authenticationFlowBindingOverrides(clientId),
-				Check:  testAccCheckKeycloakOpenidClientAuthenticationFlowBindingOverrides("keycloak_openid_client.client", "keycloak_authentication_flow.another_flow"),
+				Config: testKeycloakOpenidClient_omitExcludeIssuerFromAuthResponse(clientId, "plain"),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", "plain"),
+				),
 			},
 			{
-				Config: testKeycloakOpenidClient_withoutAuthenticationFlowBindingOverrides(clientId),
-				Check:  testAccCheckKeycloakOpenidClientAuthenticationFlowBindingOverrides("keycloak_openid_client.client", ""),
+				Config: testKeycloakOpenidClient_excludeIssuerFromAuthResponse(clientId, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", ""),
+				),
+			},
+			{
+				Config: testKeycloakOpenidClient_excludeIssuerFromAuthResponse(clientId, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", true),
+					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", ""),
+				),
+			},
+			{
+				Config: testKeycloakOpenidClient_excludeIssuerFromAuthResponse(clientId, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse("keycloak_openid_client.client", false),
+					testAccCheckKeycloakOpenidClientHasPkceCodeChallengeMethod("keycloak_openid_client.client", ""),
+				),
 			},
 		},
 	})
@@ -1086,41 +1110,20 @@ func testAccCheckKeycloakOpenidClientHasExcludeSessionStateFromAuthResponse(reso
 	}
 }
 
-func testAccCheckKeycloakOpenidClientAuthenticationFlowBindingOverrides(resourceName, flowResourceName string) resource.TestCheckFunc {
+func testAccCheckKeycloakOpenidClientHasExcludeIssuerFromAuthResponse(resourceName string, excludeIssuerFromAuthResponse types.KeycloakBoolQuoted) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, err := getOpenidClientFromState(s, resourceName)
 		if err != nil {
 			return err
 		}
 
-		if flowResourceName == "" {
-			if client.AuthenticationFlowBindingOverrides.BrowserId != "" {
-				return fmt.Errorf("expected openid client to have browserId set to empty, but got %s", client.AuthenticationFlowBindingOverrides.BrowserId)
-			}
-
-			if client.AuthenticationFlowBindingOverrides.DirectGrantId != "" {
-				return fmt.Errorf("expected openid client to have directGrantId set to empty, but got %s", client.AuthenticationFlowBindingOverrides.DirectGrantId)
-			}
-
-		} else {
-			flow, err := getAuthenticationFlowFromState(s, flowResourceName)
-			if err != nil {
-				return err
-			}
-
-			if client.AuthenticationFlowBindingOverrides.BrowserId != flow.Id {
-				return fmt.Errorf("expected openid client to have browserId set to %s, but got %s", flow.Id, client.AuthenticationFlowBindingOverrides.BrowserId)
-			}
-
-			if client.AuthenticationFlowBindingOverrides.DirectGrantId != flow.Id {
-				return fmt.Errorf("expected openid client to have directGrantId set to %s, but got %s", flow.Id, client.AuthenticationFlowBindingOverrides.DirectGrantId)
-			}
+		if client.Attributes.ExcludeIssuerFromAuthResponse != excludeIssuerFromAuthResponse {
+			return fmt.Errorf("expected openid client %s to have exclude_issuer_from_auth_response value of %t, but got %t", client.ClientId, excludeIssuerFromAuthResponse, client.Attributes.ExcludeIssuerFromAuthResponse)
 		}
 
 		return nil
 	}
 }
-
 func testAccCheckKeycloakOpenidClientLoginTheme(resourceName string, loginTheme string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client, err := getOpenidClientFromState(s, resourceName)
@@ -1381,6 +1384,22 @@ resource "keycloak_openid_client" "client" {
 	`, testAccRealm.Realm, clientId, excludeSessionStateFromAuthResponse)
 }
 
+func testKeycloakOpenidClient_excludeIssuerFromAuthResponse(clientId string, excludeIssuerFromAuthResponse bool) string {
+
+	return fmt.Sprintf(`
+data "keycloak_realm" "realm" {
+	realm = "%s"
+}
+
+resource "keycloak_openid_client" "client" {
+	client_id   = "%s"
+	realm_id    = data.keycloak_realm.realm.id
+	access_type = "CONFIDENTIAL"
+	exclude_issuer_from_auth_response = %t
+}
+	`, testAccRealm.Realm, clientId, excludeIssuerFromAuthResponse)
+}
+
 func testKeycloakOpenidClient_omitPkceChallengeMethod(clientId string) string {
 
 	return fmt.Sprintf(`
@@ -1397,6 +1416,22 @@ resource "keycloak_openid_client" "client" {
 }
 
 func testKeycloakOpenidClient_omitExcludeSessionStateFromAuthResponse(clientId, pkceChallengeMethod string) string {
+
+	return fmt.Sprintf(`
+data "keycloak_realm" "realm" {
+	realm = "%s"
+}
+
+resource "keycloak_openid_client" "client" {
+	client_id   = "%s"
+	realm_id    = data.keycloak_realm.realm.id
+	access_type = "CONFIDENTIAL"
+    pkce_code_challenge_method = "%s"
+}
+	`, testAccRealm.Realm, clientId, pkceChallengeMethod)
+}
+
+func testKeycloakOpenidClient_omitExcludeIssuerFromAuthResponse(clientId, pkceChallengeMethod string) string {
 
 	return fmt.Sprintf(`
 data "keycloak_realm" "realm" {

@@ -122,52 +122,6 @@ func resourceKeycloakIdentityProvider() *schema.Resource {
 	}
 }
 
-func getIdentityProviderFromData(data *schema.ResourceData) (*keycloak.IdentityProvider, *keycloak.IdentityProviderConfig) {
-	// some identity provider config is shared among all identity providers, so this default config will be used as a base to merge extra config into
-	defaultIdentityProviderConfig := &keycloak.IdentityProviderConfig{
-		GuiOrder:    data.Get("gui_order").(string),
-		SyncMode:    data.Get("sync_mode").(string),
-		ExtraConfig: getExtraConfigFromData(data),
-	}
-
-	return &keycloak.IdentityProvider{
-		Realm:                     data.Get("realm").(string),
-		Alias:                     data.Get("alias").(string),
-		DisplayName:               data.Get("display_name").(string),
-		Enabled:                   data.Get("enabled").(bool),
-		StoreToken:                data.Get("store_token").(bool),
-		AddReadTokenRoleOnCreate:  data.Get("add_read_token_role_on_create").(bool),
-		AuthenticateByDefault:     data.Get("authenticate_by_default").(bool),
-		LinkOnly:                  data.Get("link_only").(bool),
-		TrustEmail:                data.Get("trust_email").(bool),
-		FirstBrokerLoginFlowAlias: data.Get("first_broker_login_flow_alias").(string),
-		PostBrokerLoginFlowAlias:  data.Get("post_broker_login_flow_alias").(string),
-		InternalId:                data.Get("internal_id").(string),
-	}, defaultIdentityProviderConfig
-}
-
-func setIdentityProviderData(data *schema.ResourceData, identityProvider *keycloak.IdentityProvider) {
-	data.SetId(identityProvider.Alias)
-
-	data.Set("internal_id", identityProvider.InternalId)
-	data.Set("realm", identityProvider.Realm)
-	data.Set("alias", identityProvider.Alias)
-	data.Set("display_name", identityProvider.DisplayName)
-	data.Set("enabled", identityProvider.Enabled)
-	data.Set("store_token", identityProvider.StoreToken)
-	data.Set("add_read_token_role_on_create", identityProvider.AddReadTokenRoleOnCreate)
-	data.Set("authenticate_by_default", identityProvider.AuthenticateByDefault)
-	data.Set("link_only", identityProvider.LinkOnly)
-	data.Set("trust_email", identityProvider.TrustEmail)
-	data.Set("first_broker_login_flow_alias", identityProvider.FirstBrokerLoginFlowAlias)
-	data.Set("post_broker_login_flow_alias", identityProvider.PostBrokerLoginFlowAlias)
-
-	// identity provider config
-	data.Set("gui_order", identityProvider.Config.GuiOrder)
-	data.Set("sync_mode", identityProvider.Config.SyncMode)
-	setExtraConfigData(data, identityProvider.Config.ExtraConfig)
-}
-
 func resourceKeycloakIdentityProviderDelete(ctx context.Context, data *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	keycloakClient := meta.(*keycloak.KeycloakClient)
 
